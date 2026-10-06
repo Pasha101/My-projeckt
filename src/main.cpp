@@ -9,7 +9,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-
+#include <iomanip>
 #include "dump.hpp"
 #include "memory.hpp"
 
@@ -96,3 +96,4 @@ int main() {
 
     return 0;  // 0 means "success" to the operating system
 }
+
