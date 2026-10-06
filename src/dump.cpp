@@ -26,7 +26,7 @@ void dump(const Memory& mem) {
         for (std::size_t col = 0; col < BYTES_PER_LINE; ++col) {
             Byte b = mem.data[row + col];
             if (is_printable(b)) {
-                std::cout << b; // Змінено: друкуємо сам символ b замість '.'
+                std::cout << b;
             } else {
                 std::cout << '.';
             }
@@ -39,20 +39,20 @@ void dump(const Memory& mem) {
 }
 
 void show_byte(Byte b) {
-    // 1. Десяткове значення
+    // 1. Decimal representation
     std::cout << (int)b << "  ";
 
-    // 2. Шестнадцятикове значення (0x..)
+    // 2. Hexadecimal representation (0x..)
     std::cout << "0x" << std::hex << std::setfill('0') << std::setw(2) << (int)b << std::dec << "  ";
 
-    // 3. Двійкове значення (0b........)
+    // 3. Binary representation (0b........)
     std::cout << "0b";
     for (int i = 7; i >= 0; --i) {
         std::cout << ((b >> i) & 1);
     }
     std::cout << "  ";
 
-    // 4. Символьне значення в лапках ('A' або '.')
+    // 4. Character representation in quotes ('A' or '.')
     char ch = is_printable(b) ? (char)b : '.';
     std::cout << '\'' << ch << "'\n";
 }
