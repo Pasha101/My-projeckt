@@ -38,7 +38,7 @@ ember> dump
 ## ⚙️ Part 2: Lab 02 — Bits Don't Lie (CPU, ALU & Flags)
 
 ### Overview
-Lab 02 introduces a virtual 8-bit CPU, general-purpose registers, status flags ($Z, N, C$), and an Arithmetic Logic Unit (ALU).
+Lab 02 introduces a virtual 8-bit CPU, general-purpose registers, status flags (Z, N, C), and an Arithmetic Logic Unit (ALU).
 
 ### Architecture Additions
 - **Registers:**
@@ -52,7 +52,7 @@ Lab 02 introduces a virtual 8-bit CPU, general-purpose registers, status flags (
 - **New Commands:**
   - `regs`: Prints CPU status (`PC A B Z N C HALT`).
   - `step`: Executes instruction at `mem[PC]` and increments `PC`.
-  - `reg <a|b> <val>`: Directly modifies values in registers $A$ or $B$.
+  - `reg <a|b> <val>`: Directly modifies values in registers A or B.
 
 ### Supported Instruction Set Architecture (ISA)
 
@@ -60,32 +60,32 @@ Lab 02 introduces a virtual 8-bit CPU, general-purpose registers, status flags (
 | :---: | :--- | :--- | :---: |
 | `0x00` | `NOP` | No operation | None |
 | `0x01` | `HALT` | Stop CPU execution | None |
-| `0x10` | `ADD A, B` | $A = A + B$ | Z, N, C |
-| `0x11` | `SUB A, B` | $A = A - B$ | Z, N, C |
-| `0x12` | `AND A, B` | $A = A \ \& \ B$ | Z, N, C=0 |
-| `0x13` | `OR A, B` | $A = A \ \vert \ B$ | Z, N, C=0 |
-| `0x14` | `XOR A, B` | $A = A \ \oplus \ B$ | Z, N, C=0 |
-| `0x15` | `NOT A` | $A = \sim A$ | Z, N, C=0 |
-| `0x16` | `SHL A` | Shift Left ($A = A \ll 1$) | Z, N, C |
-| `0x17` | `SHR A` | Shift Right ($A = A \gg 1$) | Z, N, C |
-| `0x18` | `INC A` | $A = A + 1$ | Z, N, C |
-| `0x19` | `DEC A` | $A = A - 1$ | Z, N, C |
+| `0x10` | `ADD A, B` | `A = A + B` | Z, N, C |
+| `0x11` | `SUB A, B` | `A = A - B` | Z, N, C |
+| `0x12` | `AND A, B` | `A = A & B` | Z, N, C=0 |
+| `0x13` | `OR A, B` | `A = A \| B` | Z, N, C=0 |
+| `0x14` | `XOR A, B` | `A = A ^ B` | Z, N, C=0 |
+| `0x15` | `NOT A` | `A = ~A` | Z, N, C=0 |
+| `0x16` | `SHL A` | Shift Left (`A = A << 1`) | Z, N, C |
+| `0x17` | `SHR A` | Shift Right (`A = A >> 1`) | Z, N, C |
+| `0x18` | `INC A` | `A = A + 1` | Z, N, C |
+| `0x19` | `DEC A` | `A = A - 1` | Z, N, C |
 
 ---
 
 ## 🧪 Worked Examples (ALU Overflow & Flags)
 
-### 1. Addition Overflow ($200 + 100 \rightarrow 44$, $C = 1$)
-- **Input:** $A = 200$ (`0xC8`), $B = 100$ (`0x64`)
+### 1. Addition Overflow (200 + 100 = 44, C = 1)
+- **Input:** `A = 200` (`0xC8`), `B = 100` (`0x64`)
 - **Instruction:** `ADD A, B` (`0x10`)
-- **Calculation:** $200 + 100 = 300 = \text{0x12C} \pmod{256} = 44$ (`0x2C`)
-- **Result Flags:** $Z = 0$, $N = 0$, **$C = 1$** (since $300 > 255$).
+- **Calculation:** `200 + 100 = 300 = 0x12C % 256 = 44` (`0x2C`)
+- **Result Flags:** `Z = 0`, `N = 0`, **`C = 1`** (since `300 > 255`).
 
-### 2. Negative Result ($10 - 20 \rightarrow 246$, $N = 1, C = 1$)
-- **Input:** $A = 10$ (`0x0A`), $B = 20$ (`0x14`)
+### 2. Negative Result (10 - 20 = 246, N = 1, C = 1)
+- **Input:** `A = 10` (`0x0A`), `B = 20` (`0x14`)
 - **Instruction:** `SUB A, B` (`0x11`)
-- **Calculation:** $10 - 20 \equiv 246$ (`0xF6`) in 8-bit Two's Complement
-- **Result Flags:** $Z = 0$, **$N = 1$** (bit 7 set: `0b11110110`), **$C = 1$** (borrow).
+- **Calculation:** `10 - 20 = 246` (`0xF6`) in 8-bit Two's Complement
+- **Result Flags:** `Z = 0`, **`N = 1`** (bit 7 set: `0b11110110`), **`C = 1`** (borrow).
 
 ---
 
