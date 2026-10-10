@@ -1,79 +1,121 @@
-# `ember` — starter skeleton (Lab 1)
+# ember — 4KB Computer & CPU Simulator
 
-Copy this folder to a repository of your own, `git init`, and start from **M1** of
-[Lab 01](../lab-01-a-box-of-bytes.md). It builds and runs as-is.
+`ember` is an educational virtual machine and CPU simulator written in C++17 with strict compiler enforcement (`-Wall -Wextra -Werror` and AddressSanitizer/UBSan in Debug builds).
 
-```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
-cmake --build build
-./build/ember
-```
+---
 
-## Why a skeleton exists
+## 📦 Part 1: Lab 01 — A Box of Bytes (Memory Infrastructure)
 
-Lab 1 is about **bytes and types**. It is not about `while` loops, splitting a
-string into words, or `std::setw` — you meet those properly in Labs 4, 5 and 7.
-So the parts that need them are given to you, fully written and commented. You
-read those. You write the four small things that *are* Lab 1.
+### Overview
+Lab 01 establishes the base 4KB flat memory storage and diagnostic tools for inspecting raw byte data.
 
-## Given — read it, don't rewrite it
+### Given Infrastructure & Design
+- **Memory Box:** Fixed array of 4096 bytes (`using Byte = std::uint8_t; const std::size_t MEM_SIZE = 4096;`).
+- **Memory Functions:**
+  - `mem_get(mem, addr)`: Reads a byte safely. Returns `0` if address is out of bounds (`addr >= 4096`).
+  - `mem_set(mem, addr, val)`: Writes a byte safely. Returns `false` if address is out of bounds.
+- **Diagnostics & Inspection:**
+  - `dump()`: Hexdump visualization (16 bytes per row) showing Hex offset, Hex bytes, and an ASCII gutter printing printable characters or `.` for non-printable bytes.
+  - `show_byte()`: Multi-format inspector showing a single byte in 4 views:
+    - Decimal value (e.g., `65`)
+    - Hexadecimal notation (e.g., `0x41`)
+    - Binary notation (e.g., `0b01000001`)
+    - ASCII character (e.g., `'A'`)
 
-| File | What it does |
-|---|---|
-| `CMakeLists.txt` | C++17, `-Wall -Wextra -Werror`, ASan + UBSan on Debug |
-| `src/main.cpp` | the prompt: read a line, split it into words, call your functions |
-| `src/memory.hpp` | `Byte`, `MEM_SIZE`, `struct Memory` — the box |
-| `src/dump.hpp` | the two declarations |
-| `src/dump.cpp` → `dump()` | the hex dump loop |
-
-## Yours — four `TODO(lab-01)` markers
-
-```bash
-grep -rn "TODO(lab-01)" src/
-```
-
-| # | Where | The job |
-|---|---|---|
-| 1 | `memory.cpp` → `mem_get` | return the byte, or 0 if the address is outside the box |
-| 2 | `memory.cpp` → `mem_set` | write the byte, or return `false` if the address is outside |
-| 3 | `dump.cpp` → the ASCII gutter | print the character when the byte is printable |
-| 4 | `dump.cpp` → `show_byte` | one byte, four views |
-
-When all four are done:
-
-```txt
+### Initial Lab 01 Terminal Session Example
+```text
 ember> set 0 65
 ember> set 1 66
 ember> get 0
 65  0x41  0b01000001  'A'
+
 ember> dump
 0000  41 42 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |AB..............|
 ```
 
-That is M2 and M3 of Lab 1. M4 (the three deliberate breakages) is in the lab.
+---
 
-Until you implement `mem_set`, `set` accepts everything and stores nothing, and
-`get` prints `show_byte: not implemented yet`. That is the starting state, not a
-bug.
+## ⚙️ Part 2: Lab 02 — Bits Don't Lie (CPU, ALU & Flags)
 
-## Later labs
+### Overview
+Lab 02 introduces a virtual 8-bit CPU, general-purpose registers, status flags ($Z, N, C$), and an Arithmetic Logic Unit (ALU).
 
-You keep this repository for all eight labs. Every lab adds one `else if` branch
-to the dispatcher in `main.cpp` and one or two new files next to these.
+### Architecture Additions
+- **Registers:**
+  - `PC` (16-bit Program Counter): Pointer to current memory address.
+  - `A`, `B` (8-bit Registers): Data registers.
+- **Status Flags:**
+  - `Z` (Zero Flag): Set if operation result equals `0`.
+  - `N` (Negative Flag): Set if bit 7 (MSB) of result is `1`.
+  - `C` (Carry / Borrow Flag): Set on unsigned 8-bit overflow or underflow borrow.
+- **CPU State:** `HALT` flag stops execution when opcode `0x01` is hit.
+- **New Commands:**
+  - `regs`: Prints CPU status (`PC A B Z N C HALT`).
+  - `step`: Executes instruction at `mem[PC]` and increments `PC`.
+  - `reg <a|b> <val>`: Directly modifies values in registers $A$ or $B$.
+
+### Supported Instruction Set Architecture (ISA)
+
+| Opcode | Mnemonic | Operation | Flags Updated |
+| :---: | :--- | :--- | :---: |
+| `0x00` | `NOP` | No operation | None |
+| `0x01` | `HALT` | Stop CPU execution | None |
+| `0x10` | `ADD A, B` | $A = A + B$ | Z, N, C |
+| `0x11` | `SUB A, B` | $A = A - B$ | Z, N, C |
+| `0x12` | `AND A, B` | $A = A \ \& \ B$ | Z, N, C=0 |
+| `0x13` | `OR A, B` | $A = A \ \vert \ B$ | Z, N, C=0 |
+| `0x14` | `XOR A, B` | $A = A \ \oplus \ B$ | Z, N, C=0 |
+| `0x15` | `NOT A` | $A = \sim A$ | Z, N, C=0 |
+| `0x16` | `SHL A` | Shift Left ($A = A \ll 1$) | Z, N, C |
+| `0x17` | `SHR A` | Shift Right ($A = A \gg 1$) | Z, N, C |
+| `0x18` | `INC A` | $A = A + 1$ | Z, N, C |
+| `0x19` | `DEC A` | $A = A - 1$ | Z, N, C |
 
 ---
 
-## Українською
+## 🧪 Worked Examples (ALU Overflow & Flags)
 
-Скопіюйте цю теку у свій репозиторій — вона вже збирається й запускається.
+### 1. Addition Overflow ($200 + 100 \rightarrow 44$, $C = 1$)
+- **Input:** $A = 200$ (`0xC8`), $B = 100$ (`0x64`)
+- **Instruction:** `ADD A, B` (`0x10`)
+- **Calculation:** $200 + 100 = 300 = \text{0x12C} \pmod{256} = 44$ (`0x2C`)
+- **Result Flags:** $Z = 0$, $N = 0$, **$C = 1$** (since $300 > 255$).
 
-Lab 1 — про **байти й типи**, а не про цикли, розбір рядка на слова чи
-форматування виводу (це Labs 4, 5, 7). Тому все, що потребує ще не пройденого,
-вам **дано** — з коментарями, щоб читати. Ви пишете чотири маленькі речі, які й
-є Lab 1: `mem_get`, `mem_set`, ASCII-колонку в дампі та `show_byte`.
+### 2. Negative Result ($10 - 20 \rightarrow 246$, $N = 1, C = 1$)
+- **Input:** $A = 10$ (`0x0A`), $B = 20$ (`0x14`)
+- **Instruction:** `SUB A, B` (`0x11`)
+- **Calculation:** $10 - 20 \equiv 246$ (`0xF6`) in 8-bit Two's Complement
+- **Result Flags:** $Z = 0$, **$N = 1$** (bit 7 set: `0b11110110`), **$C = 1$** (borrow).
 
-Знайти свою роботу: `grep -rn "TODO(lab-01)" src/`.
+---
 
-Якщо C++ бачите вперше — спочатку
-[C++ за годину](../cpp-survival-kit.notes.md), потім
-[інструменти й git](../setup.notes.md).
+## 💻 Full Lab 02 Terminal Session
+
+```text
+ember 0.2 - 4096 bytes of memory & CPU simulation. Type `help`.
+
+ember> reg a 200
+ember> reg b 100
+ember> set 0 0x10
+ember> regs
+PC: 0000 | A: 0xc8 | B: 0x64 | Z: 0 N: 0 C: 0 | HALT: 0
+
+ember> step
+ember> regs
+PC: 0001 | A: 0x2c | B: 0x64 | Z: 0 N: 0 C: 1 | HALT: 0
+```
+
+---
+
+## 🛠️ Build and Run Instructions
+
+```bash
+# Configure build system
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+
+# Compile executable
+cmake --build build
+
+# Execute
+./build/ember.exe
+```
